@@ -1,0 +1,1076 @@
+[
+    {
+        "id": "3f097e33ccf60cd0",
+        "type": "subflow",
+        "name": "Subflow 3 - HA WebSocket API",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 140,
+                "y": 500,
+                "wires": [
+                    {
+                        "id": "e77905823ee05f6a"
+                    }
+                ]
+            }
+        ],
+        "out": [],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "46a43b7fcd6b1ec0",
+        "type": "ha-api",
+        "z": "3f097e33ccf60cd0",
+        "name": "Get last statistics",
+        "server": "062c1d87c2361bfb",
+        "version": 1,
+        "debugenabled": true,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{\t   \"id\":1,\t   \"type\":\"recorder/statistics_during_period\",\t   \"start_time\":msg.backdate,\t   \"statistic_ids\":[\t       \"sensor:water_usage\",\t       \"sensor:electricity_usage\"\t   ],\t   \"period\":\"day\"\t}",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 670,
+        "y": 500,
+        "wires": [
+            [
+                "47562dbad7bb1db6"
+            ]
+        ]
+    },
+    {
+        "id": "e77905823ee05f6a",
+        "type": "moment",
+        "z": "3f097e33ccf60cd0",
+        "name": "Get Sum from 3 days ago",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "3",
+        "adjType": "days",
+        "adjDir": "subtract",
+        "format": "",
+        "locale": "en-US",
+        "output": "backdate",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 370,
+        "y": 500,
+        "wires": [
+            [
+                "46a43b7fcd6b1ec0"
+            ]
+        ]
+    },
+    {
+        "id": "47562dbad7bb1db6",
+        "type": "change",
+        "z": "3f097e33ccf60cd0",
+        "name": "Set Sum Global Variables",
+        "rules": [
+            {
+                "t": "set",
+                "p": "electricity_sum",
+                "pt": "global",
+                "to": "payload[\"sensor:electricity_usage\"][0].sum",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "water_sum",
+                "pt": "global",
+                "to": "payload[\"sensor:water_usage\"][0].sum",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 990,
+        "y": 500,
+        "wires": [
+            [
+                "11d827d4f3130358"
+            ]
+        ]
+    },
+    {
+        "id": "1052ca563e0bc6ee",
+        "type": "ha-api",
+        "z": "3f097e33ccf60cd0",
+        "name": "Water-WS_recorder_insert",
+        "server": "062c1d87c2361bfb",
+        "version": 1,
+        "debugenabled": false,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{\t   \"id\": 2,\t   \"type\": \"recorder/import_statistics\",\t   \"metadata\": {\t       \"statistic_id\": \"sensor:water_usage\",\t       \"name\": \"Water Usage\",\t       \"has_mean\": false,\t       \"has_sum\": true,\t       \"source\": \"sensor\",\t       \"unit_of_measurement\": \"m³\"\t    },\t\"stats\": [\t       {\t           \"start\": msg.startDate & 'T00:00:00+04:00',\t           \"state\": $globalContext(\"water_state\"),\t           \"sum\":  $globalContext(\"water_state\") + $globalContext(\"water_sum\")           \t        }\t       ]\t   }",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 1560,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "795b8780142ff467",
+        "type": "ha-api",
+        "z": "3f097e33ccf60cd0",
+        "name": "Electricity-WS_recorder_insert",
+        "server": "062c1d87c2361bfb",
+        "version": 1,
+        "debugenabled": false,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{\t   \"id\": 1,\t   \"type\": \"recorder/import_statistics\",\t   \"metadata\": {\t       \"statistic_id\": \"sensor:electricity_usage\",\t       \"name\": \"Energy Usage\",\t       \"has_mean\": false,\t       \"has_sum\": true,\t       \"source\": \"sensor\",\t       \"unit_of_measurement\": \"kWh\"\t    },\t   \"stats\": [\t       {\t           \"start\": msg.startDate & 'T00:00:00+04:00',\t           \"state\": $globalContext(\"electricity_state\"),\t           \"sum\":  $globalContext(\"electricity_state\") + $globalContext(\"electricity_sum\")           \t        }\t       ]\t   }",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 1570,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "11d827d4f3130358",
+        "type": "moment",
+        "z": "3f097e33ccf60cd0",
+        "name": "",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "2",
+        "adjType": "days",
+        "adjDir": "subtract",
+        "format": "YYYY-MM-DD",
+        "locale": "en-US",
+        "output": "startDate",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 1260,
+        "y": 500,
+        "wires": [
+            [
+                "795b8780142ff467",
+                "1052ca563e0bc6ee"
+            ]
+        ]
+    },
+    {
+        "id": "062c1d87c2361bfb",
+        "type": "server",
+        "name": "Home Assistant",
+        "version": 5,
+        "addon": false,
+        "rejectUnauthorizedCerts": false,
+        "ha_boolean": "y|yes|true|on|home|open",
+        "connectionDelay": true,
+        "cacheJson": true,
+        "heartbeat": false,
+        "heartbeatInterval": 30,
+        "areaSelector": "friendlyName",
+        "deviceSelector": "friendlyName",
+        "entitySelector": "friendlyName",
+        "statusSeparator": ": ",
+        "statusYear": "hidden",
+        "statusMonth": "short",
+        "statusDay": "numeric",
+        "statusHourCycle": "default",
+        "statusTimeFormat": "h:m",
+        "enableGlobalContextStore": false
+    },
+    {
+        "id": "1809937955606483",
+        "type": "subflow",
+        "name": "Subflow 2 - Excel",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 300,
+                "wires": [
+                    {
+                        "id": "14881c8209036760"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 2020,
+                "y": 300,
+                "wires": [
+                    {
+                        "id": "9f548267d11a4c41",
+                        "port": 0
+                    },
+                    {
+                        "id": "85174c702c3a6ab0",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "9f9b8149e5fcec60",
+        "type": "book",
+        "z": "1809937955606483",
+        "name": "",
+        "raw": false,
+        "x": 690,
+        "y": 260,
+        "wires": [
+            [
+                "5dd4b516fe1fd978"
+            ]
+        ]
+    },
+    {
+        "id": "5dd4b516fe1fd978",
+        "type": "sheet",
+        "z": "1809937955606483",
+        "name": "",
+        "sheetName": "Sheet1",
+        "x": 830,
+        "y": 260,
+        "wires": [
+            [
+                "959cc17a645b471b"
+            ]
+        ]
+    },
+    {
+        "id": "3452624092d7907c",
+        "type": "cell",
+        "z": "1809937955606483",
+        "name": "get electricity reading",
+        "address": "",
+        "dataType": "v",
+        "x": 1560,
+        "y": 360,
+        "wires": [
+            [
+                "9f548267d11a4c41"
+            ]
+        ]
+    },
+    {
+        "id": "f0876267806c0f16",
+        "type": "file in",
+        "z": "1809937955606483",
+        "name": "Read file Water",
+        "filename": "\"C:\\\\Users\\\\Ahmed\\\\Downloads\\\\Meters\\\\Water\\\\\" & msg.filename",
+        "filenameType": "jsonata",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 500,
+        "y": 260,
+        "wires": [
+            [
+                "9f9b8149e5fcec60"
+            ]
+        ]
+    },
+    {
+        "id": "cfa62ea057c16984",
+        "type": "cell",
+        "z": "1809937955606483",
+        "name": "get water reading",
+        "address": "",
+        "dataType": "v",
+        "x": 1550,
+        "y": 260,
+        "wires": [
+            [
+                "85174c702c3a6ab0"
+            ]
+        ]
+    },
+    {
+        "id": "9f548267d11a4c41",
+        "type": "change",
+        "z": "1809937955606483",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "electricity_state",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1810,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "85174c702c3a6ab0",
+        "type": "change",
+        "z": "1809937955606483",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "water_state",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1800,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1ac890b9f8cf62d7",
+        "type": "function",
+        "z": "1809937955606483",
+        "name": "get Target day Cell Address",
+        "func": "let row = parseInt(msg.day) + 1;  //Shift in Excel                          \nlet cell = `B${row}`;        //Target cell   \n\n\nmsg.selectAddress = cell //For next node (Read Cell)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1300,
+        "y": 260,
+        "wires": [
+            [
+                "cfa62ea057c16984"
+            ]
+        ]
+    },
+    {
+        "id": "707209fc9fa37750",
+        "type": "file in",
+        "z": "1809937955606483",
+        "name": "Read file Electricity",
+        "filename": "\"C:\\\\Users\\\\Ahmed\\\\Downloads\\\\Meters\\\\Electricity\\\\\" & msg.filename",
+        "filenameType": "jsonata",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 510,
+        "y": 360,
+        "wires": [
+            [
+                "79a1a134c9ab3807"
+            ]
+        ]
+    },
+    {
+        "id": "959cc17a645b471b",
+        "type": "moment",
+        "z": "1809937955606483",
+        "name": "Get Reading (2 days ago)",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "2",
+        "adjType": "days",
+        "adjDir": "subtract",
+        "format": "DD",
+        "locale": "en-US",
+        "output": "day",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 1030,
+        "y": 260,
+        "wires": [
+            [
+                "1ac890b9f8cf62d7"
+            ]
+        ]
+    },
+    {
+        "id": "79a1a134c9ab3807",
+        "type": "book",
+        "z": "1809937955606483",
+        "name": "",
+        "raw": false,
+        "x": 690,
+        "y": 360,
+        "wires": [
+            [
+                "ec365110f55b8473"
+            ]
+        ]
+    },
+    {
+        "id": "ec365110f55b8473",
+        "type": "sheet",
+        "z": "1809937955606483",
+        "name": "",
+        "sheetName": "Sheet1",
+        "x": 830,
+        "y": 360,
+        "wires": [
+            [
+                "e0b1b69c45538288"
+            ]
+        ]
+    },
+    {
+        "id": "93d3936a0f9cb4d2",
+        "type": "function",
+        "z": "1809937955606483",
+        "name": "get Target day (Cell Address)",
+        "func": "let row = parseInt(msg.day) + 1;  //Shift in Excel                          \nlet cell = `B${row}`;        //Target cell   \n\n\nmsg.selectAddress = cell //For next node (Read Cell)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1300,
+        "y": 360,
+        "wires": [
+            [
+                "3452624092d7907c"
+            ]
+        ]
+    },
+    {
+        "id": "e0b1b69c45538288",
+        "type": "moment",
+        "z": "1809937955606483",
+        "name": "Get Reading (2 days ago)",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "2",
+        "adjType": "days",
+        "adjDir": "subtract",
+        "format": "DD",
+        "locale": "en-US",
+        "output": "day",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 1030,
+        "y": 360,
+        "wires": [
+            [
+                "93d3936a0f9cb4d2"
+            ]
+        ]
+    },
+    {
+        "id": "14881c8209036760",
+        "type": "moment",
+        "z": "1809937955606483",
+        "name": "Get Month File (-2 days)",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "2",
+        "adjType": "days",
+        "adjDir": "subtract",
+        "format": "YYYY-MM",
+        "locale": "en-US",
+        "output": "filename",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 230,
+        "y": 300,
+        "wires": [
+            [
+                "f0876267806c0f16",
+                "707209fc9fa37750"
+            ]
+        ]
+    },
+    {
+        "id": "7b335d6ed8b40a32",
+        "type": "subflow",
+        "name": "Subflow 1 - Browser and Download",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 120,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "c845d5217c5c6ae7"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 2260,
+                "y": 580,
+                "wires": [
+                    {
+                        "id": "bcbf597a3449319e",
+                        "port": 0
+                    },
+                    {
+                        "id": "1e22bb1508b351f8",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "c845d5217c5c6ae7",
+        "type": "puppeteer-browser-launch",
+        "z": "7b335d6ed8b40a32",
+        "timeout": 30000,
+        "slowMo": 0,
+        "headless": false,
+        "debugport": 0,
+        "devtools": false,
+        "cookies": "",
+        "name": "",
+        "executablePath": "",
+        "x": 300,
+        "y": 100,
+        "wires": [
+            [
+                "d88c5fd0451b572f"
+            ]
+        ]
+    },
+    {
+        "id": "d88c5fd0451b572f",
+        "type": "puppeteer-page-goto",
+        "z": "7b335d6ed8b40a32",
+        "name": "utility website",
+        "url": "https://www.myutilitywebsiteexample.com",
+        "urltype": "str",
+        "waitUntil": "load",
+        "x": 510,
+        "y": 100,
+        "wires": [
+            [
+                "fc5bd2c36829cac5"
+            ]
+        ]
+    },
+    {
+        "id": "fc5bd2c36829cac5",
+        "type": "puppeteer-page-set-value",
+        "z": "7b335d6ed8b40a32",
+        "g": "00c95d23bcec71ba",
+        "name": "username",
+        "selector": "#form-field-login-main-username",
+        "selectortype": "str",
+        "value": "REPLACE_ME",
+        "valuetype": "str",
+        "x": 720,
+        "y": 100,
+        "wires": [
+            [
+                "5d51e786a62ce4a7"
+            ]
+        ]
+    },
+    {
+        "id": "5d51e786a62ce4a7",
+        "type": "puppeteer-page-set-value",
+        "z": "7b335d6ed8b40a32",
+        "g": "00c95d23bcec71ba",
+        "name": "password",
+        "selector": "#form-field-login-main-password",
+        "selectortype": "str",
+        "value": "REPLACE_ME",
+        "valuetype": "str",
+        "x": 920,
+        "y": 100,
+        "wires": [
+            [
+                "1d09aea864540621"
+            ]
+        ]
+    },
+    {
+        "id": "1d09aea864540621",
+        "type": "puppeteer-page-click",
+        "z": "7b335d6ed8b40a32",
+        "g": "00c95d23bcec71ba",
+        "selector": "#loginButton",
+        "selectortype": "str",
+        "button": "left",
+        "clickCount": 1,
+        "delay": "0",
+        "name": "submit login",
+        "x": 1130,
+        "y": 100,
+        "wires": [
+            [
+                "ce4bb4cd4773eb82"
+            ]
+        ]
+    },
+    {
+        "id": "5078a29c5b8196cd",
+        "type": "puppeteer-page-click",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "selector": "div.graph div:nth-of-type(1) li.month_tab",
+        "selectortype": "str",
+        "button": "left",
+        "clickCount": 1,
+        "delay": "0",
+        "name": "Electricity Daily View",
+        "x": 740,
+        "y": 260,
+        "wires": [
+            [
+                "26fe35bb85e7471b"
+            ]
+        ]
+    },
+    {
+        "id": "49f92af949659163",
+        "type": "puppeteer-page-download",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "selector": "div.graph > div:nth-of-type(1) div:nth-of-type(3) > button",
+        "selectortype": "str",
+        "button": "left",
+        "clickCount": 1,
+        "delay": 0,
+        "downloadPath": "",
+        "downloadPathtype": "str",
+        "fileName": "",
+        "fileNametype": "str",
+        "name": "Download Electricity",
+        "x": 1180,
+        "y": 260,
+        "wires": [
+            [
+                "748711fd8030602c"
+            ]
+        ]
+    },
+    {
+        "id": "ce4bb4cd4773eb82",
+        "type": "delay",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "20",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 520,
+        "y": 260,
+        "wires": [
+            [
+                "5078a29c5b8196cd"
+            ]
+        ]
+    },
+    {
+        "id": "0006de3f33792b7f",
+        "type": "puppeteer-page-click",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "selector": "div.nonevcomponentsdiv div:nth-of-type(2) li.month_tab",
+        "selectortype": "str",
+        "button": "left",
+        "clickCount": 1,
+        "delay": "0",
+        "name": "Water Daily View",
+        "x": 730,
+        "y": 380,
+        "wires": [
+            [
+                "ba5709e2753a25cb"
+            ]
+        ]
+    },
+    {
+        "id": "84531c666de60de4",
+        "type": "puppeteer-page-download",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "selector": "div.nonevcomponentsdiv div:nth-of-type(2) div:nth-of-type(4) > button",
+        "selectortype": "str",
+        "button": "left",
+        "clickCount": 1,
+        "delay": 0,
+        "downloadPath": "",
+        "downloadPathtype": "str",
+        "fileName": "",
+        "fileNametype": "str",
+        "name": "Download Water",
+        "x": 1160,
+        "y": 380,
+        "wires": [
+            [
+                "610cd3e9409b61ea"
+            ]
+        ]
+    },
+    {
+        "id": "26fe35bb85e7471b",
+        "type": "delay",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "10",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 960,
+        "y": 260,
+        "wires": [
+            [
+                "49f92af949659163"
+            ]
+        ]
+    },
+    {
+        "id": "ba5709e2753a25cb",
+        "type": "delay",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 940,
+        "y": 380,
+        "wires": [
+            [
+                "84531c666de60de4"
+            ]
+        ]
+    },
+    {
+        "id": "be489e66f96cf6b6",
+        "type": "puppeteer-browser-close",
+        "z": "7b335d6ed8b40a32",
+        "name": "",
+        "x": 1560,
+        "y": 380,
+        "wires": [
+            [
+                "270b56d11814d6e0"
+            ]
+        ]
+    },
+    {
+        "id": "610cd3e9409b61ea",
+        "type": "delay",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1360,
+        "y": 380,
+        "wires": [
+            [
+                "be489e66f96cf6b6"
+            ]
+        ]
+    },
+    {
+        "id": "748711fd8030602c",
+        "type": "delay",
+        "z": "7b335d6ed8b40a32",
+        "g": "fea8a8cc0e5c21ea",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 520,
+        "y": 380,
+        "wires": [
+            [
+                "0006de3f33792b7f"
+            ]
+        ]
+    },
+    {
+        "id": "270b56d11814d6e0",
+        "type": "moment",
+        "z": "7b335d6ed8b40a32",
+        "name": "Generate Filename",
+        "topic": "",
+        "input": "object",
+        "inputType": "date",
+        "inTz": "Asia/Dubai",
+        "adjAmount": "0",
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "YYYY-MM",
+        "locale": "en-US",
+        "output": "filename",
+        "outputType": "msg",
+        "outTz": "Asia/Dubai",
+        "x": 1790,
+        "y": 580,
+        "wires": [
+            [
+                "1e22bb1508b351f8",
+                "bcbf597a3449319e"
+            ]
+        ]
+    },
+    {
+        "id": "1e22bb1508b351f8",
+        "type": "fs-ops-move",
+        "z": "7b335d6ed8b40a32",
+        "name": "Move Electricity File",
+        "sourcePath": "C:\\Users\\Ahmed\\Downloads",
+        "sourcePathType": "str",
+        "sourceFilename": "Electricity Consumption - Daily.xls",
+        "sourceFilenameType": "str",
+        "destPath": "C:\\Users\\Ahmed\\Downloads\\Meters\\Electricity",
+        "destPathType": "str",
+        "destFilename": "filename",
+        "destFilenameType": "msg",
+        "link": false,
+        "x": 2040,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bcbf597a3449319e",
+        "type": "fs-ops-move",
+        "z": "7b335d6ed8b40a32",
+        "name": "Move Water File",
+        "sourcePath": "C:\\Users\\Ahmed\\Downloads",
+        "sourcePathType": "str",
+        "sourceFilename": "Water Consumption - Daily m³.xls",
+        "sourceFilenameType": "str",
+        "destPath": "C:\\Users\\Ahmed\\Downloads\\Meters\\Water",
+        "destPathType": "str",
+        "destFilename": "filename",
+        "destFilenameType": "msg",
+        "link": false,
+        "x": 2020,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "00c95d23bcec71ba",
+        "type": "group",
+        "z": "7b335d6ed8b40a32",
+        "name": "Page 1",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "fc5bd2c36829cac5",
+            "5d51e786a62ce4a7",
+            "1d09aea864540621"
+        ],
+        "x": 634,
+        "y": 59,
+        "w": 592,
+        "h": 82
+    },
+    {
+        "id": "fea8a8cc0e5c21ea",
+        "type": "group",
+        "z": "7b335d6ed8b40a32",
+        "name": "Page 2",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "5078a29c5b8196cd",
+            "49f92af949659163",
+            "ce4bb4cd4773eb82",
+            "0006de3f33792b7f",
+            "84531c666de60de4",
+            "26fe35bb85e7471b",
+            "ba5709e2753a25cb",
+            "610cd3e9409b61ea",
+            "748711fd8030602c"
+        ],
+        "x": 434,
+        "y": 219,
+        "w": 1012,
+        "h": 202
+    },
+    {
+        "id": "b0d12e523605f57e",
+        "type": "tab",
+        "label": "Utility meters automation",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2f340d681d745768",
+        "type": "inject",
+        "z": "b0d12e523605f57e",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 15 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 310,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b9846a3a20a3f8e3",
+        "type": "subflow:7b335d6ed8b40a32",
+        "z": "b0d12e523605f57e",
+        "name": "Get Readings from Website",
+        "x": 640,
+        "y": 480,
+        "wires": [
+            [
+                "19ba2aa1392e07b5"
+            ]
+        ]
+    },
+    {
+        "id": "19ba2aa1392e07b5",
+        "type": "subflow:1809937955606483",
+        "z": "b0d12e523605f57e",
+        "name": "Read and Parse Excel",
+        "x": 980,
+        "y": 480,
+        "wires": [
+            [
+                "d9f3dff78336f59e"
+            ]
+        ]
+    },
+    {
+        "id": "d9f3dff78336f59e",
+        "type": "subflow:3f097e33ccf60cd0",
+        "z": "b0d12e523605f57e",
+        "name": "Insert stats to HA",
+        "x": 1310,
+        "y": 480,
+        "wires": []
+    }
+]
