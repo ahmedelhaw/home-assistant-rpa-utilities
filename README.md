@@ -19,7 +19,7 @@ Use this SQL query to retrieve statistics for water and electricity usage:
 
 ```sql
 SELECT 
-    datetime(s.start_ts, 'unixepoch', 'localtime') AS start_iso_dxb,
+    datetime(s.start_ts, 'unixepoch', 'localtime') AS start_iso,
     s.state, 
     s.sum 
 FROM statistics s
