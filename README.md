@@ -9,7 +9,7 @@ A repository for automating utility meter readings using Robotic Process Automat
 - Implementation using OpenRPA framework
 
 ### Option 2 (Recommended): Using Node-RED
-- **Tutorial**: [YouTube Video](https://www.youtube.com/watch?v=I5dfFuoYgMg&t)
+- **Tutorial**: [YouTube Video](https://www.youtube.com/watch?v=KborLlSTubI)
 - Implementation using Node-RED flows
 
 ## Database Queries (Only for troubleshooting)
