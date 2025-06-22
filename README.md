@@ -12,7 +12,7 @@ A repository for automating utility meter readings using Robotic Process Automat
 - **Tutorial**: [YouTube Video](https://www.youtube.com/watch?v=I5dfFuoYgMg&t)
 - Implementation using Node-RED flows
 
-## Database Queries
+## Database Queries (Only for troubleshooting)
 
 ### Water and Electricity Statistics
 Use this SQL query to retrieve statistics for water and electricity usage:
